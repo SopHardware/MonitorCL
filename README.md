@@ -1,85 +1,41 @@
 # SyncSentinel
 
-Sistema de monitoreo de sincronización de bases de datos SQL Server para procesos de integración empresarial.
+Sistema de monitoreo de sincronización de bases de datos SQL Server con métricas, KPIs y notificaciones en tiempo real.
+
+## Características Principales
+
+| Característica | Descripción |
+|-----------------|-------------|
+| **Session Lifecycle** | Seguimiento automático de colas con Queue Drain Time |
+| **Resiliencia** | Reintentos automáticos con tenacity (3 intentos) |
+| **Alertas Críticas** | Notificaciones cuando un proceso falla 3+ veces |
+| **KPIs en Slack** | Registros, duración y estado en tiempo real |
+| **Scheduler** | Ventana configurable 18:30-06:00, intervalo 10 min |
+| **Queries Externos** | SQL en archivos individuales con fechas dinámicas |
 
 ## Arquitectura
 
 ```mermaid
 flowchart TB
-    subgraph AWS["Infraestructura"]
-        subgraph SQL["Bases de Datos SQL Server"]
-            GAINS[GAINS 3.66]
-            REPLICA[Réplica 3.83]
-            EPICOR[Epicor 3.72]
-            CL[CL 20.19]
-        end
-        
-        POSTGRES[(PostgreSQL<br/>Metrics)]
-        SLACK[\"Slack<br/>Notifications"/]
+    subgraph SQLServer["Bases de Datos SQL Server"]
+        GAINS[GAINS<br/>Intermedia<br/>SQL 2012]
+        REPLICA[REPLICA<br/>ReplicationDataBase<br/>SQL 2022]
+        EPICOR[EPICOR<br/>EpicorERP<br/>SQL 2019]
+        CL[CL<br/>SAS1115<br/>SQL 2000]
     end
     
     subgraph Worker["SyncSentinel Worker"]
-        LOADER["Query Loader"]
-        ADAPTER[SQL Adapter]
-        PROCESS[Process Monitor]
-        NOTIFIER[Slack Notifier]
+        LOADER["Query Loader<br/>queries/*.sql"]
+        ADAPTER["SQL Adapter<br/>+ Tenacity"]
+        PROCESS["Process Monitor<br/>Session Lifecycle"]
+        NOTIFIER["Slack Notifier<br/>KPIs + Alertas"]
     end
     
-    GAINS -.-> ADAPTER
-    REPLICA -.-> ADAPTER
-    EPICOR -.-> ADAPTER
-    CL -.-> ADAPTER
-    
+    SQLServer --> ADAPTER
     ADAPTER --> PROCESS
-    PROCESS --> POSTGRES
     PROCESS --> NOTIFIER
-    NOTIFIER --> SLACK
-    
+    NOTIFIER --> SLACK[("Slack<br/>Notifications")]
     LOADER --> ADAPTER
-```
-
-## Estructura del Proyecto
-
-```
-MonitorCL/
-├── config.py              # Configuración con Pydantic Settings
-├── Dockerfile            # Imagen Docker
-├── docker-compose.yml    # Orquestación
-├── requirements.txt      # Dependencias Python
-├── .env                  # Variables de entorno
-├── .env.example          # Plantilla de configuración
-├── queries/              # Archivos SQL individuales
-│   ├── gains_aprobaciones.sql
-│   ├── replica_aprobaciones.sql
-│   ├── cl_material.sql
-│   ├── epicor_reprocesamiento.sql
-│   ├── cl_embarques.sql
-│   ├── replica_epicor.sql
-│   ├── replica_cl.sql
-│   └── epicor_ship.sql
-├── src/
-│   ├── domain/          # Entidades y interfaces
-│   │   ├── entities.py
-│   │   ├── repositories.py
-│   │   └── value_objects.py
-│   ├── application/     # Casos de uso
-│   │   ├── use_cases.py
-│   │   └── services.py
-│   ├── infrastructure/ # Implementaciones
-│   │   ├── adapters.py
-│   │   ├── database.py
-│   │   ├── notifiers.py
-│   │   └── repositories.py
-│   ├── entrypoints/     # Punto de entrada
-│   │   └── worker.py
-│   └── shared/         # Utilidades
-│       ├── exceptions.py
-│       ├── logging.py
-│       ├── query_loader.py
-│       └── utils.py
-└── tests/
-    ├── test_domain.py
-    └── test_db_connections.py
 ```
 
 ## Procesos Monitoreados
@@ -94,11 +50,11 @@ flowchart LR
         E2["CL → Réplica<br/>(Embarques)"]
     end
     
-    subgraph Bases de Datos
-        DB1["GAINS<br/>PO_Traspasos"]
-        DB2["Réplica<br/>ReplicateData"]
-        DB3["CL<br/>BXCJ_Consolidado"]
-        DB4["Epicor<br/>ICE.UD24"]
+    subgraph Databases
+        DB1["GAINS<br/>Intermedia<br/>PO_Traspasos"]
+        DB2["REPLICA<br/>ReplicationDataBase<br/>ReplicateData"]
+        DB3["CL<br/>SAS1115<br/>BXCJ_Consolidado"]
+        DB4["EPICOR<br/>EpicorERP<br/>ICE.UD24"]
     end
     
     G1 --> DB1
@@ -108,6 +64,63 @@ flowchart LR
     E2 --> DB3
 ```
 
+## Estructura del Proyecto
+
+```
+MonitorCL/
+├── config.py                 # Configuración Pydantic Settings
+├── Dockerfile                # Imagen Docker
+├── docker-compose.yml        # Orquestación
+├── requirements.txt           # Dependencias Python
+├── .env                      # Variables de entorno
+├── .env.example              # Plantilla de configuración
+├── .gitignore                # Archivos ignorados
+├── README.md                 # Documentación
+├── prompt.md                 # Especificaciones originales
+├── queries/                  # Archivos SQL individuales
+│   ├── gains_aprobaciones.sql
+│   ├── replica_aprobaciones.sql
+│   ├── cl_material.sql
+│   ├── epicor_reprocesamiento.sql
+│   ├── cl_embarques.sql
+│   ├── replica_epicor.sql
+│   ├── replica_cl.sql
+│   └── epicor_ship.sql
+├── src/
+│   ├── domain/               # Entidades y Value Objects
+│   │   ├── entities.py       # SyncSession, MetricSnapshot, ProcessMetrics
+│   │   ├── repositories.py   # Interfaces de repositorios
+│   │   └── value_objects.py
+│   ├── application/          # Casos de uso
+│   │   └── use_cases.py
+│   ├── infrastructure/        # Implementaciones
+│   │   ├── adapters.py       # SQL Server + Tenacity @retry
+│   │   ├── database.py       # PostgreSQL (future)
+│   │   ├── notifiers.py     # Slack con KPIs y alertas
+│   │   └── repositories.py
+│   ├── entrypoints/         # Punto de entrada
+│   │   └── worker.py         # Worker principal
+│   └── shared/              # Utilidades
+│       ├── exceptions.py
+│       ├── logging.py       # JSON structured logging
+│       ├── query_loader.py # Carga queries desde archivos
+│       └── utils.py         # Connectionstrings
+└── tests/
+    ├── test_domain.py
+    └── test_db_connections.py
+```
+
+## Bases de Datos
+
+| Servidor | IP | Base de Datos | SQL Version | Driver |
+|----------|-----|----------------|--------------|--------|
+| GAINS | 10.40.3.66 | Intermedia | SQL Server 2012 | ODBC Driver 17 |
+| REPLICA | 10.40.3.83 | ReplicationDataBase | SQL Server 2022 | ODBC Driver 17 |
+| EPICOR | 10.40.3.72 | EpicorERP | SQL Server 2019 | ODBC Driver 17 |
+| CL | 192.168.20.19 | SAS1115 | SQL Server 2000 | SQL Server |
+
+> **Nota**: SQL Server 2000 requiere driver `{SQL Server}` (no ODBC Driver 17)
+
 ## Configuración
 
 ### Variables de Entorno
@@ -116,10 +129,10 @@ flowchart LR
 |----------|-------------|---------|
 | `APP_NAME` | Nombre de la aplicación | SyncSentinel |
 | `APP_ENV` | Entorno | development |
-| `MONITOR_START_TIME` | Inicio de health checks | 18:30 |
-| `VALIDATION_START_TIME` | Inicio de validaciones | 19:00 |
-| `MONITOR_END_TIME` | Fin de ventana | 05:00 |
-| `CHECK_INTERVAL_SECONDS` | Intervalo de ejecución | 180 |
+| `MONITOR_START_TIME` | Inicio de ventana (hora) | 18:30 |
+| `MONITOR_END_TIME` | Fin de ventana (hora) | 06:00 |
+| `CHECK_INTERVAL_SECONDS` | Intervalo de ejecución | 600 |
+| `START_DATE_DAYS_BACK` | Días hacia atrás para queries | 30 |
 | `MSSQL_USER` | Usuario SQL Server | - |
 | `MSSQL_PASS` | Contraseña SQL Server | - |
 | `HOST_GAINS` | Host GAINS | - |
@@ -130,12 +143,6 @@ flowchart LR
 | `MSSQL_DB_REPLICA` | Base de datos Réplica | master |
 | `MSSQL_DB_EPICOR` | Base de datos Epicor | master |
 | `MSSQL_DB_CL` | Base de datos CL | master |
-| `START_DATE_DAYS_BACK` | Días hacia atrás para fecha | 30 |
-| `POSTGRES_USER` | Usuario PostgreSQL | postgres |
-| `POSTGRES_PASSWORD` | Contraseña PostgreSQL | postgres |
-| `POSTGRES_HOST` | Host PostgreSQL | localhost |
-| `POSTGRES_PORT` | Puerto PostgreSQL | 5432 |
-| `POSTGRES_DB` | Base de datos metrics | db_metrics |
 | `SLACK_WEBHOOK_URL` | Webhook de Slack | - |
 
 ## Instalación
@@ -146,7 +153,6 @@ flowchart LR
 # Crear virtual environment
 python -m venv .venv
 source .venv/Scripts/activate  # Windows
-# o source .venv/bin/activate   # Linux/Mac
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -156,7 +162,7 @@ cp .env.example .env
 # Editar .env con los valores correspondientes
 
 # Ejecutar tests
-pytest tests/ -v
+pytest tests/ -v -k "not integration"
 ```
 
 ### Docker
@@ -183,66 +189,143 @@ docker logs -f syncsentinel
 tail -f logs/app.log
 ```
 
+## Session Lifecycle (Queue Drain Time)
+
+El sistema maneja sesiones automáticamente:
+
+```mermaid
+stateDiagram-v2
+    [*] --> SinDatos: count = 0
+    SinDatos --> SesionActiva: count > 0
+    SesionActiva --> SesionActiva: count > 0
+    SesionActiva --> SesionCerrada: count = 0
+    SesionCerrada --> SinDatos: Nuevo ciclo
+    SesionCerrada --> [*]
+```
+
+1. **count > 0** → Se inicia una nueva sesión con `start_time`
+2. **count > 0** → Se guardan snapshots en cada ciclo
+3. **count = 0** → Se cierra la sesión y calcula la duración
+4. **Duración** = tiempo entre inicio y cuando la cola quedó en 0
+
+### Ejemplo de Logging
+
+```
+
+
+2026-05-07 23:17:07 - GAINS: SESIÓN INICIADA (count=203)
+2026-05-07 23:17:37 - GAINS: count=150, duration=00:00:30
+2026-05-07 23:17:07 - GAINS: SESIÓN CERRADA (duration=00:01:15)
+```
+
+## Resiliencia
+
+El sistema usa **Tenacity** para reintentos automáticos:
+
+```python
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=4, max=10),
+    reraise=True
+)
+def execute_count_query(self, query: str) -> int:
+    ...
+```
+
+- **Máx 3 intentos** por consulta
+- **Backoff exponencial** (4-10 segundos entre intentos)
+- **No afecta** otros procesos si uno falla
+
+## Alertas Críticas
+
+Cuando un proceso falla **3 veces consecutivas**, se envía una alerta a Slack:
+
+```
+🚨 ALERTA CRÍTICA - Fallo en Proceso
+
+*Proceso:* GAINS
+*Host:* 10.40.3.66
+
+*Error:*
+[Microsoft][ODBC Driver 17] Connection timeout
+
+⏱️ 2026-05-07 23:30:00
+```
+
+- **Intervalo mínimo**: 30 minutos entre alertas del mismo proceso
+
+## Notificaciones Slack
+
+### Formato de KPI
+
+```
+🔄 Monitor de Sincronización
+🕒 2026-05-07 23:17
+─────────────────────
+Aprobaciones GAINS → Réplica
+📊 203 | ⏳ En proceso | ⏱️ 00:00:07
+
+Aprobaciones Réplica → Epicor
+📊 284 | ⏳ En proceso | ⏱️ 00:00:07
+
+Cola de Material CL → Réplica
+📊 0 | 🟢 OK | ⏱️ -
+
+Estatus Epicor
+📊 86 | ⏳ En proceso | ⏱️ 00:00:02
+
+Embarques CL → Réplica
+📊 0 | 🟢 OK | ⏱️ -
+─────────────────────
+⏱️ Intervalo: 10 min | Horario: 18:30-06:00
+```
+
+### Leyenda
+
+| Símbolo | Significado |
+|--------|------------|
+| 📊 | Registros/Count |
+| ⏳ | En proceso (sesión activa) |
+| ✅ | Completado (count = 0) |
+| 🟢 | OK (sin sesión, sin errores) |
+| ❌ | Error (fallo en query) |
+| ⏱️ | Duración (HH:MM:SS) |
+
 ## Queries
 
-Los queries están en archivos individuales en la carpeta `queries/`. 
-Cada archivo contiene un query autonomía con placeholders dinámicos:
+Los queries están en archivos individuales en `queries/`:
 
-- `@START_DATE@` - Se reemplaza con la fecha calculada dinámicamente
+- `@START_DATE@` - Se reemplaza con `today - START_DATE_DAYS_BACK`
 
 ### Fecha Dinámica
 
-La fecha de inicio se calcula: `today - START_DATE_DAYS_BACK` (default 30 días)
+```bash
+# START_DATE_DAYS_BACK=30
+# today = 2026-05-07
+# @START_DATE@ = 2026-04-07
+```
 
 ## Tests
 
-### Ejecutar Tests Unitarios
+### Tests Unitarios
 
 ```bash
 pytest tests/ -v -k "not integration"
 ```
 
-### Ejecutar Tests de Integración
+### Tests de Integración
 
 ```bash
 RUN_INTEGRATION_TESTS=1 pytest tests/ -v
 ```
 
-## Logging
-
-El sistema usa logging estructurado en formato JSON:
-
-```json
-{
-  "timestamp": "2026-05-07T21:30:00Z",
-  "level": "INFO",
-  "module": "worker",
-  "message": "Iniciando SyncSentinel Worker...",
-  "correlation_id": "abc-123-def"
-}
-```
-
-## Notificaciones Slack
-
-Las notificaciones se envían con formato Block Kit:
-
-```
-🟢 Monitor de Sincronización Nocturna
-🕒 Última actualización: 2026-05-07 21:30:00
-
-*Proceso:* Aprobaciones GAINS → Réplica | *Estatus:* Pendiente | *Registros:* 15 | *Tiempo:* 00:00:00
-*Proceso:* Cola de Material CL → Réplica | *Estatus:* Completado | *Registros:* 0 | *Tiempo:* 02:15:30
-
-📝 Correlation ID: abc-123-def
-```
-
 ## Contribuir
 
 1. Fork el repositorio
-2. Crear una rama feature: `git checkout -b feature/nueva-funcionalidad`
-3. Commit los cambios: `git commit -m "Agrega nueva funcionalidad"`
-4. Push a la rama: `git push origin feature/nueva-funcionalidad`
-5. Crear un Pull Request
+2. Crear rama: `git checkout -b feature/nueva-funcionalidad`
+3. Commit: `git commit -m "Agrega nueva funcionalidad"`
+4. Push: `git push origin feature/nueva-funcionalidad`
+5. Crear Pull Request
 
 ## Licencia
 
