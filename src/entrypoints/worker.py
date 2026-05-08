@@ -209,6 +209,6 @@ if __name__ == "__main__":
     
     async def main():
         worker = SyncSentinelWorker(app_settings)
-        await worker.run_single_cycle()
+        await worker.start()  # Usa start() para respetar el scheduler
     
     asyncio.run(main())

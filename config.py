@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     # Notificaciones
     SLACK_WEBHOOK_URL: str = Field(..., env="SLACK_WEBHOOK_URL")
     
+    # Configuración de logging
+    LOG_ERROR_FILE: str = Field(default="logs/errors.log", env="LOG_ERROR_FILE")
+    
     # Configuración de fechas para queries
     START_DATE_DAYS_BACK: int = Field(default=30, env="START_DATE_DAYS_BACK")
     
