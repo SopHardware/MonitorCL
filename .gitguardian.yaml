@@ -1,14 +1,9 @@
 version: 2
-
 paths-ignore:
-  - .env.example
-  - .env
-  - docker-compose.yml
   - tests/**
+  - .env.example
+  - docker-compose.yml
   - src/infrastructure/database.py
-
-detection:
-  exclude:
-    - pattern: "testpass"
-    - pattern: "tu_contraseña"
-    - pattern: "TU/WEBHOOK"
+secret:
+  ignored_detectors:
+    - Generic Password

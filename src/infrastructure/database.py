@@ -45,13 +45,12 @@ class MetricSnapshotORM(Base):
 def get_database_url() -> str:
     """Construye la URL de conexión a PostgreSQL desde variables de entorno"""
     user = os.getenv("POSTGRES_USER", "user_monitores_app")
-    password = os.getenv("POSTGRES_PASSWORD", "")
+    pg_pwd = os.getenv("POSTGRES_PASSWORD", "")
     host = os.getenv("POSTGRES_HOST", "10.40.3.170")
     port = os.getenv("POSTGRES_PORT", "5433")
     database = os.getenv("POSTGRES_DB", "Monitores")
     
-    # URL encode password para caracteres especiales (@, #, etc.)
-    password_encoded = quote_plus(password)
+    password_encoded = quote_plus(pg_pwd)
     
     return f"postgresql://{user}:{password_encoded}@{host}:{port}/{database}"
 

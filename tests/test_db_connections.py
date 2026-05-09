@@ -19,7 +19,7 @@ class TestSqlServerAdapter(unittest.TestCase):
             "SERVER=192.168.3.66,1433;"
             "DATABASE=GAINS;"
             "UID=testuser;"
-            "PWD=testpass;"
+            "PWD=test_password;"
         )
         self.adapter = SqlServerAdapter(self.connection_string)
 
@@ -64,7 +64,7 @@ class TestConnectionStringBuilder(unittest.TestCase):
         conn_str = get_mssql_connection_string(
             host="192.168.3.66",
             user="testuser",
-            password="testpass",
+            password="test_password",
             database="GAINS",
             port=1433,
             timeout=30
@@ -81,7 +81,7 @@ class TestConnectionStringBuilder(unittest.TestCase):
         conn_str = get_mssql_connection_string(
             host="192.168.3.66",
             user="testuser",
-            password="testpass"
+            password="test_password"
         )
 
         self.assertIn("DATABASE=master", conn_str)
@@ -91,7 +91,7 @@ class TestConnectionStringBuilder(unittest.TestCase):
         conn_str = get_mssql_connection_string(
             host="192.168.3.66",
             user="testuser",
-            password="testpass",
+            password="test_password",
             database="TestDB",
             port=1434
         )
@@ -114,7 +114,7 @@ class TestDatabaseConfiguration(unittest.TestCase):
             "HOST_EPICOR": "192.168.3.72",
             "HOST_CL": "192.168.20.19",
             "POSTGRES_USER": "user_monitores_app",
-            "POSTGRES_PASSWORD": "testpass",
+            "POSTGRES_PASSWORD": "test_password",
             "POSTGRES_HOST": "10.40.3.170",
             "POSTGRES_PORT": "5433",
             "POSTGRES_DB": "Monitores",
