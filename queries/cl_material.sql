@@ -1,0 +1,9 @@
+SELECT COUNT(DISTINCT(E.FolioFecha))
+FROM BXCJ_ConsolidadoEncabezadoCLON E (NOLOCK)
+LEFT JOIN bxcj_EmpaqueMasterDetalle MD (NOLOCK) ON MD.FolioSegCont = E.FolioFecha
+LEFT JOIN bxcj_Embarque EM (NOLOCK) ON (EM.FOLIOEMBARCADO = E.FOLIOFECHA or MD.FOLIOFECHA = EM.FOLIOEMBARCADO)
+LEFT JOIN EmbarqueEncabezado EE (nolock) ON EE.EE_FolioArmadoRuta = EM.Ruta
+WHERE CONVERT(NVARCHAR,E.FECHA,23) >= '@START_DATE@'
+  AND EE_Estatus = 'FINALIZADO' 
+  AND (E.ExportStatus = 0)
+  AND CONVERT(NVARCHAR,EE.EE_FechaAutoriza,23) < CONVERT(NVARCHAR,GETDATE(),23)

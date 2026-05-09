@@ -1,0 +1,9 @@
+version: 2
+paths-ignore:
+  - tests/**
+  - .env.example
+  - docker-compose.yml
+  - src/infrastructure/database.py
+secret:
+  ignored_detectors:
+    - Generic Password
