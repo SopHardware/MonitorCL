@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from ..domain.entities import ProcessMetrics, ProcessStatus
 from ..infrastructure.adapters import SqlServerAdapter
 from ..infrastructure.notifiers import SlackNotifier
+from ..infrastructure.postgres_repositories import PostgresSessionRepository, PostgresSnapshotRepository
 from ..shared.logging import setup_logging
 from ..shared.query_loader import get_process_query
 from ..shared.utils import get_mssql_connection_string
@@ -26,6 +27,10 @@ class SyncSentinelWorker:
         self.tasks: List[asyncio.Task] = []
         self.sql_adapters: Dict[str, SqlServerAdapter] = {}
         self.slack_notifier: Optional[SlackNotifier] = None
+        
+        # Repositorios PostgreSQL
+        self.session_repository = PostgresSessionRepository()
+        self.snapshot_repository = PostgresSnapshotRepository()
         
         # Métricas en memoria por proceso
         self.process_metrics: Dict[str, ProcessMetrics] = {}
@@ -148,14 +153,20 @@ class SyncSentinelWorker:
                 # Agregar snapshot
                 metrics.add_snapshot(count)
                 
+                # Persistir snapshot
+                if metrics.session:
+                    self.snapshot_repository.save_snapshot(metrics.snapshots[-1])
+                
                 # Session lifecycle
                 if count > 0 and not metrics.session:
                     # Iniciar nueva sesión
                     metrics.start_session(count)
+                    self.session_repository.save_session(metrics.session)
                     logger.info(f"  {process_key}: SESIÓN INICIADA (count={count})")
                 elif count == 0 and metrics.session and metrics.session.is_active():
                     # Cerrar sesión
                     closed_session = metrics.close_session()
+                    self.session_repository.save_session(closed_session)
                     logger.info(f"  {process_key}: SESIÓN CERRADA (duration={closed_session.duration_seconds}s)")
                 
                 logger.info(f"  {process_key}: count={count}, duration={metrics.get_duration()}")

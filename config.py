@@ -33,12 +33,13 @@ class Settings(BaseSettings):
     MSSQL_DB_EPICOR: str = Field(default="master", env="MSSQL_DB_EPICOR")
     MSSQL_DB_CL: str = Field(default="master", env="MSSQL_DB_CL")
     
-    # Configuración PostgreSQL
-    POSTGRES_USER: str = Field(default="postgres", env="POSTGRES_USER")
-    POSTGRES_PASSWORD: str = Field(default="postgres", env="POSTGRES_PASSWORD")
-    POSTGRES_HOST: str = Field(default="localhost", env="POSTGRES_HOST")
-    POSTGRES_PORT: str = Field(default="5432", env="POSTGRES_PORT")
-    POSTGRES_DB: str = Field(default="db_metrics", env="POSTGRES_DB")
+    # Configuración PostgreSQL (gbmondock01)
+    POSTGRES_USER: str = Field(default="user_monitores_app", env="POSTGRES_USER")
+    POSTGRES_PASSWORD: str = Field(..., env="POSTGRES_PASSWORD")
+    POSTGRES_HOST: str = Field(default="10.40.3.170", env="POSTGRES_HOST")
+    POSTGRES_PORT: str = Field(default="5433", env="POSTGRES_PORT")
+    POSTGRES_DB: str = Field(default="Monitores", env="POSTGRES_DB")
+    POSTGRES_SCHEMA: str = Field(default="CL", env="POSTGRES_SCHEMA")
     
     # Notificaciones
     SLACK_WEBHOOK_URL: str = Field(..., env="SLACK_WEBHOOK_URL")

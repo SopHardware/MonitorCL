@@ -113,11 +113,12 @@ class TestDatabaseConfiguration(unittest.TestCase):
             "HOST_REPLICA": "192.168.3.83",
             "HOST_EPICOR": "192.168.3.72",
             "HOST_CL": "192.168.20.19",
-            "POSTGRES_USER": "postgres",
-            "POSTGRES_PASSWORD": "postgres",
-            "POSTGRES_HOST": "localhost",
-            "POSTGRES_PORT": "5432",
-            "POSTGRES_DB": "db_metrics",
+            "POSTGRES_USER": "user_monitores_app",
+            "POSTGRES_PASSWORD": "testpass",
+            "POSTGRES_HOST": "10.40.3.170",
+            "POSTGRES_PORT": "5433",
+            "POSTGRES_DB": "Monitores",
+            "POSTGRES_SCHEMA": "CL",
             "SLACK_WEBHOOK_URL": "https://hooks.slack.com/test"
         }):
             from config import Settings
