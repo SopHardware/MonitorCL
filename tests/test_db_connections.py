@@ -73,7 +73,7 @@ class TestConnectionStringBuilder(unittest.TestCase):
         self.assertIn("SERVER=192.168.3.66,1433", conn_str)
         self.assertIn("DATABASE=GAINS", conn_str)
         self.assertIn("UID=testuser", conn_str)
-        self.assertIn("PWD=testpass", conn_str)
+        self.assertIn("PWD=test_password", conn_str)
         self.assertIn("Timeout=30", conn_str)
 
     def test_get_mssql_connection_string_default_master(self):
