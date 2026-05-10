@@ -21,38 +21,7 @@ docker network create syncsentinel-net
 
 ### 1.2 Variables de Entorno
 
-Crear archivo `.env` con los valores correctos:
-
-```env
-# Aplicación
-APP_NAME=SyncSentinel
-APP_ENV=prod
-
-# Scheduler
-MONITOR_START_TIME=18:30
-MONITOR_END_TIME=06:00
-CHECK_INTERVAL_SECONDS=600
-
-# SQL Server
-MSSQL_USER=tu_usuario
-MSSQL_PASS=tu_contraseña
-HOST_GAINS=10.40.3.66
-HOST_REPLICA=10.40.3.83
-HOST_EPICOR=10.40.3.72
-HOST_CL=192.168.20.19
-
-# Bases de datos
-MSSQL_DB_GAINS=Intermedia
-MSSQL_DB_REPLICA=ReplicationDataBase
-MSSQL_DB_EPICOR=EpicorERP
-MSSQL_DB_CL=SAS1115
-
-# Slack
-SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
-
-# Fechas
-START_DATE_DAYS_BACK=30
-```
+Las variables de entorno se configuran directamente en Portainer (ver sección 2.3). No es necesario crear un archivo `.env` local.
 
 ---
 
@@ -72,43 +41,37 @@ START_DATE_DAYS_BACK=30
 
 **Opción A: Usar Web Editor**
 
-Pegar el siguiente YAML:
+1. Pegar el contenido del archivo `docker-compose.yml` del repositorio
+2. Ir a la sección **Environment** (abajo del editor)
+3. Agregar las siguientes variables de entorno:
 
-```yaml
-version: '3.8'
+| Variable | Valor |
+|----------|-------|
+| APP_NAME | SyncSentinel |
+| APP_ENV | prod |
+| MONITOR_START_TIME | 18:30 |
+| MONITOR_END_TIME | 06:00 |
+| CHECK_INTERVAL_SECONDS | 600 |
+| MSSQL_USER | (tu usuario SQL) |
+| MSSQL_PASS | (tu contraseña SQL) |
+| HOST_GAINS | 10.40.3.66 |
+| HOST_REPLICA | 10.40.3.83 |
+| HOST_EPICOR | 10.40.3.72 |
+| HOST_CL | 192.168.20.19 |
+| MSSQL_DB_GAINS | Intermedia |
+| MSSQL_DB_REPLICA | ReplicationDataBase |
+| MSSQL_DB_EPICOR | EpicorERP |
+| MSSQL_DB_CL | SAS1115 |
+| POSTGRES_USER | user_monitores_app |
+| POSTGRES_PASSWORD | (tu contraseña PostgreSQL) |
+| POSTGRES_HOST | 10.40.3.170 |
+| POSTGRES_PORT | 5433 |
+| POSTGRES_DB | Monitores |
+| POSTGRES_SCHEMA | CL |
+| SLACK_WEBHOOK_URL | (tu webhook de Slack) |
+| START_DATE_DAYS_BACK | 30 |
 
-services:
-  syncsentinel:
-    image: syncsentinel:latest
-    container_name: syncsentinel
-    restart: unless-stopped
-    env_file:
-      - .env
-    volumes:
-      - ./logs:/app/logs
-    environment:
-      - TZ=America/Mexico_City
-    networks:
-      - syncsentinel-net
-    deploy:
-      resources:
-        limits:
-          cpus: '0.5'
-          memory: 512M
-        reservations:
-          cpus: '0.25'
-          memory: 256M
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 10s
-
-networks:
-  syncsentinel-net:
-    external: true
-```
+4. Click en **Deploy the stack**
 
 **Opción B: Usar Git Repository**
 
