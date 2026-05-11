@@ -76,9 +76,9 @@ Las variables de entorno se configuran directamente en Portainer (ver sección 2
 **Opción B: Usar Git Repository**
 
 1. Repository URL: `https://github.com/SopHardware/MonitorCL`
-2. Reference: `feature/syncsentinel-complete`
+2. Reference: `main` o `fix/gitguardian-scan-issues`
 3. Build: `Dockerfile`
-4. Environment variables: pegar las del `.env`
+4. En la sección **Environment**, agregar las variables de la tabla anterior
 
 ### 2.4 Desplegar
 
@@ -186,11 +186,11 @@ Container → Logs → Follow
 
 ### Problema: Container no inicia
 
-**Causa**: Falta archivo `.env`
+**Causa**: Faltan variables de entorno
 
-**Solución**:
+**Solución**: Verificar que todas las variables estén configuradas en Portainer:
 ```bash
-docker exec -it syncsentinel ls -la /app/
+docker exec syncsentinel env | grep -E "(MSSQL|POSTGRES|SLACK)"
 ```
 
 ### Problema: No conecta a SQL Server

@@ -5,31 +5,8 @@ services:
     build: .
     container_name: syncsentinel
     restart: unless-stopped
-    environment:
-      - APP_NAME=${APP_NAME}
-      - APP_ENV=${APP_ENV}
-      - MONITOR_START_TIME=${MONITOR_START_TIME}
-      - MONITOR_END_TIME=${MONITOR_END_TIME}
-      - CHECK_INTERVAL_SECONDS=${CHECK_INTERVAL_SECONDS}
-      - MSSQL_USER=${MSSQL_USER}
-      - MSSQL_PASS=${MSSQL_PASS}
-      - HOST_GAINS=${HOST_GAINS}
-      - HOST_REPLICA=${HOST_REPLICA}
-      - HOST_EPICOR=${HOST_EPICOR}
-      - HOST_CL=${HOST_CL}
-      - MSSQL_DB_GAINS=${MSSQL_DB_GAINS}
-      - MSSQL_DB_REPLICA=${MSSQL_DB_REPLICA}
-      - MSSQL_DB_EPICOR=${MSSQL_DB_EPICOR}
-      - MSSQL_DB_CL=${MSSQL_DB_CL}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_PORT=${POSTGRES_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_SCHEMA=${POSTGRES_SCHEMA}
-      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
-      - LOG_ERROR_FILE=${LOG_ERROR_FILE}
-      - START_DATE_DAYS_BACK=${START_DATE_DAYS_BACK}
+    env_file:
+      - .env
     volumes:
       - ./logs:/app/logs
       - ./data:/app/data
