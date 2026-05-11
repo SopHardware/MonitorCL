@@ -46,3 +46,4 @@ data/
 
 # Environment
 .env
+.env.example

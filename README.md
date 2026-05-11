@@ -72,8 +72,6 @@ MonitorCL/
 ├── Dockerfile                # Imagen Docker
 ├── docker-compose.yml        # Orquestación
 ├── requirements.txt           # Dependencias Python
-├── .env                      # Variables de entorno
-├── .env.example              # Plantilla de configuración
 ├── .gitignore                # Archivos ignorados
 ├── README.md                 # Documentación
 ├── prompt.md                 # Especificaciones originales
@@ -157,19 +155,71 @@ source .venv/Scripts/activate  # Windows
 # Instalar dependencias
 pip install -r requirements.txt
 
-# Copiar configuración
-cp .env.example .env
+# Crear archivo .env basado en la tabla de configuración
 # Editar .env con los valores correspondientes
 
 # Ejecutar tests
 pytest tests/ -v -k "not integration"
 ```
 
-### Docker
+### Docker / Portainer
 
-```bash
-docker-compose up -d
+#### 1. Crear archivo .env
+
+Crear un archivo `.env` con las siguientes variables:
+
+```env
+# Aplicación
+APP_NAME=SyncSentinel
+APP_ENV=prod
+
+# Scheduler
+MONITOR_START_TIME=18:30
+MONITOR_END_TIME=06:00
+CHECK_INTERVAL_SECONDS=600
+START_DATE_DAYS_BACK=30
+
+# SQL Server
+MSSQL_USER=tu_usuario
+MSSQL_PASS=tu_contraseña
+HOST_GAINS=10.40.3.66
+HOST_REPLICA=10.40.3.83
+HOST_EPICOR=10.40.3.72
+HOST_CL=192.168.20.19
+
+# Bases de datos
+MSSQL_DB_GAINS=Intermedia
+MSSQL_DB_REPLICA=ReplicationDataBase
+MSSQL_DB_EPICOR=EpicorERP
+MSSQL_DB_CL=SAS1115
+
+# PostgreSQL
+POSTGRES_USER=user_monitores_app
+POSTGRES_PASSWORD=tu_password_postgres
+POSTGRES_HOST=10.40.3.170
+POSTGRES_PORT=5433
+POSTGRES_DB=Monitores
+POSTGRES_SCHEMA=CL
+
+# Slack
+SLACK_WEBHOOK_URL=https://hooks.slack.com/services/XXX/YYY/ZZZ
+
+# Logging
+LOG_ERROR_FILE=logs/errors.log
 ```
+
+#### 2. Desplegar en Portainer
+
+1. Ir a **Stacks** → **Add stack**
+2. Nombre: `syncsentinel`
+3. Seleccionar **Git Repository**:
+   - URL: `https://github.com/SopHardware/MonitorCL`
+   - Reference: `main`
+   - Build: `Dockerfile`
+4. En la sección **Environment file**, subir el archivo `.env` creado en el paso 1
+5. Click **Deploy the stack**
+
+> **Nota**: El archivo `.env` contiene credenciales sensibles y no debe subirse al repositorio. Manténlo local y súbelo solo en Portainer.
 
 ## Uso
 
