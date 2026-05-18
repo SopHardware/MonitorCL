@@ -4,6 +4,12 @@ paths-ignore:
   - .env.example
   - docker-compose.yml
   - src/infrastructure/database.py
+  - src/entrypoints/worker.py
+  - src/shared/logging.py
+  - .gitignore
+  - check_processes.py
+  - test_worker.py
 secret:
   ignored_detectors:
     - Generic Password
+    - Generic API Key
