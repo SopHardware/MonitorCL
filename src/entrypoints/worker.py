@@ -14,7 +14,8 @@ from ..shared.query_loader import get_process_query
 from ..shared.utils import get_mssql_connection_string
 from config import Settings
 
-setup_logging()
+settings = Settings()
+setup_logging(app_env=settings.APP_ENV)
 logger = logging.getLogger(__name__)
 
 
