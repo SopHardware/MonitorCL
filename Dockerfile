@@ -22,6 +22,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copiar código fuente
 COPY src/ ./src/
 COPY config.py ./
+COPY queries/ ./queries/
 
 # Crear directorio para logs
 RUN mkdir -p /app/logs
