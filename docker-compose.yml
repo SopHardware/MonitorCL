@@ -5,8 +5,6 @@ services:
     build: .
     container_name: syncsentinel
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
       - ./logs:/app/logs
       - ./data:/app/data
