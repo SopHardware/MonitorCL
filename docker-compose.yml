@@ -5,32 +5,45 @@ services:
     build: .
     container_name: syncsentinel
     restart: unless-stopped
-    volumes:
-      - ./logs:/app/logs
-      - ./data:/app/data
-    depends_on:
-      - db
-    networks:
-      - syncsentinel-net
-
-  db:
-    image: postgres:15-alpine
-    container_name: syncsentinel-db
-    restart: unless-stopped
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
-      POSTGRES_DB: ${POSTGRES_DB:-db_metrics}
+      # Config PostgreSQL externo
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_HOST
+      - POSTGRES_PORT
+      - POSTGRES_DB
+      - POSTGRES_SCHEMA
+      # Config SQL Server hosts
+      - HOST_GAINS
+      - HOST_REPLICA
+      - HOST_EPICOR
+      - HOST_CL
+      # Config SQL Server databases
+      - MSSQL_DB_GAINS
+      - MSSQL_DB_REPLICA
+      - MSSQL_DB_EPICOR
+      - MSSQL_DB_CL
+      # Config SQL Server credentials
+      - MSSQL_USER
+      - MSSQL_PASS
+      # App configuration
+      - APP_NAME
+      - APP_ENV
+      - MONITOR_START_TIME
+      - MONITOR_END_TIME
+      - CHECK_INTERVAL_SECONDS
+      # Notifications
+      - SLACK_WEBHOOK_URL
+      # Logging
+      - LOG_ERROR_FILE
+      # Query configuration
+      - START_DATE_DAYS_BACK
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
+      - /home/boxadm/infra/syncsentinel/logs:/app/logs
+      - /home/boxadm/infra/syncsentinel/data:/app/data
     networks:
       - syncsentinel-net
 
 networks:
   syncsentinel-net:
     driver: bridge
-
-volumes:
-  postgres_data:
